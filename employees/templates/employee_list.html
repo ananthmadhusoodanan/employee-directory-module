@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<div class="card shadow">
+
+    <div class="card-header bg-primary text-white">
+
+        <h4>Employee List</h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="GET" class="row mb-3">
+
+            <div class="col-md-4">
+
+                <input
+                    type="text"
+                    name="department"
+                    class="form-control"
+                    placeholder="Search Department">
+
+            </div>
+
+            <div class="col-md-2">
+
+                <button class="btn btn-success">
+                    Search
+                </button>
+
+            </div>
+
+        </form>
+
+        <table class="table table-striped">
+
+            <thead>
+
+                <tr>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Email</th>
+                    <th>Designation</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for employee in page_obj %}
+
+                <tr>
+
+                    <td>{{ employee.Full_Name }}</td>
+                    <td>{{ employee.Department }}</td>
+                    <td>{{ employee.Email }}</td>
+                    <td>{{ employee.Designation }}</td>
+
+                    <td>
+
+                        <a href="{% url 'employee_detail' employee.pk %}"
+                           class="btn btn-info btn-sm">
+
+                            View
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+<div class="d-flex justify-content-center mt-4">
+
+    <nav>
+
+        <ul class="pagination">
+
+            {% if page_obj.has_previous %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page=1&department={{ request.GET.department }}">
+                    First
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.previous_page_number }}&department={{ request.GET.department }}">
+                    Previous
+                </a>
+            </li>
+
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+
+                {% if page_obj.number == num %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            {{ num }}
+                        </span>
+                    </li>
+
+                {% else %}
+
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ num }}&department={{ request.GET.department }}">
+                            {{ num }}
+                        </a>
+                    </li>
+
+                {% endif %}
+
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.next_page_number }}&department={{ request.GET.department }}">
+                    Next
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.paginator.num_pages }}&department={{ request.GET.department }}">
+                    Last
+                </a>
+            </li>
+
+            {% endif %}
+
+        </ul>
+
+    </nav>
+
+</div>
+{% endblock %}

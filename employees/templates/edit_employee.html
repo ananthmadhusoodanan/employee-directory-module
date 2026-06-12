@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card shadow">
+
+    <div class="card-header bg-warning">
+
+        <h4>Edit Employee</h4>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+    </div>
+    {% if employee.img %}
+
+<div class="text-center mb-3">
+
+    
+
+</div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

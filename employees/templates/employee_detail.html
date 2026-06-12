@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="card shadow">
+
+    <div class="card-header bg-info text-white">
+
+        <h4>Employee Details</h4>
+
+    </div>
+
+    <div class="card-body">
+        {% if employee.img %}
+
+<div class="text-center mb-4">
+
+    <img
+        src="{{ employee.img.url }}"
+        alt="Employee Image"
+        class="img-thumbnail"
+        width="200"
+        style="border-radius: 50%;">
+        <p><strong>Name:</strong> {{ employee.Full_Name }}</p>
+
+</div>
+
+{% endif %}
+
+        <p><strong>Department:</strong> {{ employee.Department }}</p>
+
+        <p><strong>Email:</strong> {{ employee.Email }}</p>
+
+        <p><strong>Phone:</strong> {{ employee.Phone_Number }}</p>
+
+        <p><strong>Designation:</strong> {{ employee.Designation }}</p>
+
+        <p><strong>Status:</strong> {{ employee.Status }}</p>
+
+        <p><strong>Date Joined:</strong> {{ employee.Date_Joined }}</p>
+        
+    
+
+
+        
+       <div class="d-flex justify-content-between mt-4">
+
+    <a href="{% url 'employee_list' %}"
+       class="btn btn-secondary">
+        Back
+    </a>
+
+    <div>
+
+        <a href="{% url 'edit_employee' employee.pk %}"
+           class="btn btn-warning me-2">
+            Edit
+        </a>
+
+        <a href="{% url 'delete_employee' employee.pk %}"
+           class="btn btn-danger">
+            Delete
+        </a>
+
+    </div>
+
+</div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
