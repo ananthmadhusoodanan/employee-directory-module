@@ -38,4 +38,38 @@ path(
     views.import_csv,
     name='import_csv'
 ),
+path(
+    "dashboard/",
+    views.dashboard,
+    name="dashboard"
+),
+
+path(
+    "apply-leave/",
+    views.apply_leave,
+    name="apply_leave"
+),
+
+path(
+    "my-leaves/",
+    views.my_leaves,
+    name="my_leaves"
+),
+path(
+    "hr-dashboard/",
+    views.hr_dashboard,
+    name="hr_dashboard"
+),
+
+path(
+    "approve-leave/<int:pk>/",
+    views.approve_leave,
+    name="approve_leave"
+),
+
+path(
+    "reject-leave/<int:pk>/",
+    views.reject_leave,
+    name="reject_leave"
+),
 ]

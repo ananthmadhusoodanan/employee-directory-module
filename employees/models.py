@@ -43,3 +43,53 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.Full_Name
+    
+from datetime import timedelta
+
+
+class Leave(models.Model):
+
+    LEAVE_TYPES = [
+        ("Casual", "Casual"),
+        ("Sick", "Sick"),
+        ("Annual", "Annual"),
+        ("Work From Home", "Work From Home"),
+    ]
+
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="leaves"
+    )
+
+    leave_type = models.CharField(
+        max_length=20,
+        choices=LEAVE_TYPES
+    )
+
+    start_date = models.DateField()
+
+    end_date = models.DateField()
+
+    reason = models.TextField()
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending"
+    )
+
+    applied_on = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def total_days(self):
+
+        return (
+            self.end_date - self.start_date
+        ).days + 1

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row mb-4">
+
+    <div class="col-md-3">
+
+        <div class="card text-center shadow">
+
+            <div class="card-body">
+
+                <h6>Total Requests</h6>
+
+                <h2>{{ total }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <div class="card text-center shadow">
+
+            <div class="card-body">
+
+                <h6>Pending</h6>
+
+                <h2 class="text-warning">
+
+                    {{ pending }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <div class="card text-center shadow">
+
+            <div class="card-body">
+
+                <h6>Approved</h6>
+
+                <h2 class="text-success">
+
+                    {{ approved }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <div class="card text-center shadow">
+
+            <div class="card-body">
+
+                <h6>Rejected</h6>
+
+                <h2 class="text-danger">
+
+                    {{ rejected }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card shadow">
+
+    <div class="card-header bg-dark text-white">
+
+        <h4 class="mb-0">
+
+            Leave Requests
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-striped">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+                    <th>Type</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for leave in leaves %}
+
+                <tr>
+
+                    <td>{{ leave.user.username }}</td>
+
+                    <td>{{ leave.leave_type }}</td>
+
+                    <td>{{ leave.start_date }}</td>
+
+                    <td>{{ leave.end_date }}</td>
+
+                    <td>{{ leave.reason }}</td>
+
+                    <td>
+
+                        {% if leave.status == "Approved" %}
+
+                            <span class="badge bg-success">
+
+                                Approved
+
+                            </span>
+
+                        {% elif leave.status == "Rejected" %}
+
+                            <span class="badge bg-danger">
+
+                                Rejected
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-warning">
+
+                                Pending
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if leave.status == "Pending" %}
+
+                        <a href="{% url 'approve_leave' leave.pk %}"
+                           class="btn btn-success btn-sm">
+
+                            Approve
+
+                        </a>
+
+                        <a href="{% url 'reject_leave' leave.pk %}"
+                           class="btn btn-danger btn-sm">
+
+                            Reject
+
+                        </a>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="7" class="text-center">
+
+                        No leave requests found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

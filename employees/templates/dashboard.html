@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+
+    <div class="col-md-4">
+
+
+    </div>
+    <div class="row mb-4">
+
+    <div class="col-md-4">
+
+        <div class="card shadow text-center">
+
+            <div class="card-body">
+
+                <h5>Total Annual Leave</h5>
+
+                <h2>12</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow text-center">
+
+            <div class="card-body">
+
+                <h5>Used Leaves</h5>
+
+                <h2 class="text-danger">
+
+                    {{ used_leaves }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow text-center">
+
+            <div class="card-body">
+
+                <h5>Remaining Leaves</h5>
+
+                <h2 class="text-success">
+
+                    {{ remaining_leaves }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+    
+
+</div>
+
+{% endblock %}

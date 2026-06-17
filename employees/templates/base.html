@@ -139,6 +139,41 @@
                 Add Employee
 
             </a>
+            <a href="{% url 'dashboard' %}"
+   class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+
+    <i class="bi bi-speedometer2 me-2"></i>
+    Dashboard
+
+</a>
+
+<a href="{% url 'apply_leave' %}"
+   class="{% if request.resolver_match.url_name == 'apply_leave' %}active{% endif %}">
+
+    <i class="bi bi-calendar-plus me-2"></i>
+    Apply Leave
+
+</a>
+
+<a href="{% url 'my_leaves' %}"
+   class="{% if request.resolver_match.url_name == 'my_leaves' %}active{% endif %}">
+
+    <i class="bi bi-calendar-check me-2"></i>
+    My Leaves
+
+</a>
+{% if request.user.is_staff %}
+
+<a href="{% url 'hr_dashboard' %}"
+   class="{% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}">
+
+    <i class="bi bi-clipboard-check me-2"></i>
+
+    HR Dashboard
+
+</a>
+
+{% endif %}
 
         </div>
 
@@ -151,10 +186,12 @@
                 Logout
 
             </a>
+            
 
         </div>
 
     </div>
+    
 
     <div class="content">
 

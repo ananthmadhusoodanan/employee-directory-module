@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.core.paginator import Paginator
-
 from .models import Employee
 from .forms import EmployeeForm
 from django.contrib.auth.decorators import login_required
@@ -10,19 +9,21 @@ from django.contrib.auth import authenticate, login, logout
 import csv
 import io
 from datetime import datetime
-
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
-
 from .models import Employee
-
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-
 from .models import Employee
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from .models import Employee, Leave
+from .decorators import hr_required
+from .models import Leave
+from datetime import date
 
-# Employee List
+
 
 @login_required
 def employee_list(request):
@@ -247,9 +248,6 @@ def logout_view(request):
 
     return redirect("login")
 
-from django.contrib.auth import logout
-from django.shortcuts import redirect
-
 
 def logout_view(request):
 
@@ -310,18 +308,13 @@ def import_csv(request):
             request,
             "Please select a CSV file."
         )
-
         return redirect("employee_list")
-
     if not csv_file.name.endswith(".csv"):
-
         messages.error(
             request,
             "Only CSV files are allowed."
         )
-
         return redirect("employee_list")
-
     try:
 
         file_data = csv_file.read().decode("utf-8")
@@ -370,28 +363,20 @@ def import_csv(request):
             date_joined = None
 
             for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%m/%d/%Y"):
-
                 try:
-
                     date_joined = datetime.strptime(
                         date_value,
                         fmt
                     ).date()
-
                     break
-
                 except ValueError:
                     continue
-
             if date_joined is None:
-
                 messages.error(
                     request,
                     f"Invalid date format: {date_value}"
                 )
-
                 continue
-
             Employee.objects.create(
                 user=request.user,
                 Full_Name=row["Full_Name"].strip(),
@@ -402,26 +387,174 @@ def import_csv(request):
                 Status=row["Status"].strip(),
                 Date_Joined=date_joined
             )
-
             imported_count += 1
-
         messages.success(
             request,
             f"{imported_count} employees imported successfully."
         )
-
         if skipped_count:
-
             messages.warning(
                 request,
                 f"{skipped_count} employees were skipped because they already exist."
             )
-
     except Exception as e:
-
         messages.error(
             request,
             f"Error importing file: {str(e)}"
         )
-
     return redirect("employee_list")
+
+@login_required
+def dashboard(request):
+
+    current_year = date.today().year
+
+    approved_leaves = Leave.objects.filter(
+        user=request.user,
+        status="Approved",
+        start_date__year=current_year
+    )
+
+    used_leaves = sum(
+        leave.total_days
+        for leave in approved_leaves
+    )
+
+    total_entitlement = 12
+
+    remaining_leaves = max(
+        total_entitlement - used_leaves,
+        0
+    )
+
+    context = {
+
+        "employee_count": Employee.objects.filter(
+            user=request.user
+        ).count(),
+
+        "leave_count": Leave.objects.filter(
+            user=request.user
+        ).count(),
+
+        "pending_leaves": Leave.objects.filter(
+            user=request.user,
+            status="Pending"
+        ).count(),
+
+        "total_leaves": total_entitlement,
+
+        "used_leaves": used_leaves,
+
+        "remaining_leaves": remaining_leaves,
+    }
+
+    return render(
+        request,
+        "dashboard.html",
+        context
+    )
+
+@login_required
+def apply_leave(request):
+
+    if request.method == "POST":
+
+        Leave.objects.create(
+            user=request.user,
+            leave_type=request.POST.get("leave_type"),
+            start_date=request.POST.get("start_date"),
+            end_date=request.POST.get("end_date"),
+            reason=request.POST.get("reason"),
+        )
+
+        messages.success(
+            request,
+            "Leave applied successfully."
+        )
+
+        return redirect("my_leaves")
+
+    return render(
+        request,
+        "apply_leave.html"
+    )
+@login_required
+def my_leaves(request):
+
+    leaves = Leave.objects.filter(
+        user=request.user
+    ).order_by("-applied_on")
+
+    return render(
+        request,
+        "my_leaves.html",
+        {"leaves": leaves}
+    )
+@login_required
+@hr_required
+def hr_dashboard(request):
+
+    leaves = Leave.objects.select_related(
+        "user"
+    ).order_by("-applied_on")
+
+    context = {
+        "total": leaves.count(),
+
+        "pending": leaves.filter(
+            status="Pending"
+        ).count(),
+
+        "approved": leaves.filter(
+            status="Approved"
+        ).count(),
+
+        "rejected": leaves.filter(
+            status="Rejected"
+        ).count(),
+
+        "leaves": leaves,
+    }
+
+    return render(
+        request,
+        "hr_dashboard.html",
+        context
+    )
+@login_required
+@hr_required
+def approve_leave(request, pk):
+
+    leave = get_object_or_404(
+        Leave,
+        pk=pk
+    )
+
+    leave.status = "Approved"
+    leave.save()
+
+    messages.success(
+        request,
+        "Leave approved."
+    )
+
+    return redirect("hr_dashboard")
+@login_required
+@hr_required
+def reject_leave(request, pk):
+
+    leave = get_object_or_404(
+        Leave,
+        pk=pk
+    )
+
+    leave.status = "Rejected"
+    leave.save()
+
+    messages.success(
+        request,
+        "Leave rejected."
+    )
+
+    return redirect("hr_dashboard")
