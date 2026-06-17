@@ -1,32 +1,26 @@
-
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Employee(models.Model):
 
-    Employee_ID = models.AutoField(
-        primary_key=True
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='employees'
     )
 
-    Full_Name = models.CharField(
-        max_length=100
-    )
+    Employee_ID = models.AutoField(primary_key=True)
 
-    Department = models.CharField(
-        max_length=50
-    )
+    Full_Name = models.CharField(max_length=100)
 
-    Email = models.EmailField(
-        unique=True
-    )
+    Department = models.CharField(max_length=50)
 
-    Phone_Number = models.CharField(
-        max_length=10
-    )
+    Email = models.EmailField(unique=True)
 
-    Designation = models.CharField(
-        max_length=50
-    )
+    Phone_Number = models.CharField(max_length=10)
+
+    Designation = models.CharField(max_length=50)
 
     STATUS_CHOICES = [
         ("Active", "Active"),
@@ -49,4 +43,3 @@ class Employee(models.Model):
 
     def __str__(self):
         return self.Full_Name
-
