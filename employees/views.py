@@ -22,7 +22,13 @@ from .models import Employee, Leave
 from .decorators import hr_required
 from .models import Leave
 from datetime import date
+from datetime import datetime, date
+from django.utils import timezone
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 
+from .models import Leave
 
 
 @login_required
@@ -407,26 +413,20 @@ def import_csv(request):
 @login_required
 def dashboard(request):
 
-    current_year = date.today().year
-
-    approved_leaves = Leave.objects.filter(
-        user=request.user,
-        status="Approved",
-        start_date__year=current_year
+    balance = calculate_leave_balance(
+        request.user
     )
 
-    used_leaves = sum(
-        leave.total_days
-        for leave in approved_leaves
+    context = {
+        **balance,
+        "now": timezone.now()
+    }
+
+    return render(
+        request,
+        "dashboard.html",
+        context
     )
-
-    total_entitlement = 12
-
-    remaining_leaves = max(
-        total_entitlement - used_leaves,
-        0
-    )
-
     context = {
 
         "employee_count": Employee.objects.filter(
@@ -460,17 +460,62 @@ def apply_leave(request):
 
     if request.method == "POST":
 
+        leave_type = request.POST.get("leave_type")
+        start_date = request.POST.get("start_date")
+        end_date = request.POST.get("end_date")
+        reason = request.POST.get("reason")
+
+        try:
+
+            start_date = datetime.strptime(
+                start_date,
+                "%Y-%m-%d"
+            ).date()
+
+            end_date = datetime.strptime(
+                end_date,
+                "%Y-%m-%d"
+            ).date()
+
+        except ValueError:
+
+            messages.error(
+                request,
+                "Please enter valid dates."
+            )
+
+            return redirect("apply_leave")
+
+        if end_date < start_date:
+
+            messages.error(
+                request,
+                "End date cannot be before start date."
+            )
+
+            return redirect("apply_leave")
+
+        if start_date < date.today():
+
+            messages.error(
+                request,
+                "You cannot apply for leave in the past."
+            )
+
+            return redirect("apply_leave")
+
         Leave.objects.create(
             user=request.user,
-            leave_type=request.POST.get("leave_type"),
-            start_date=request.POST.get("start_date"),
-            end_date=request.POST.get("end_date"),
-            reason=request.POST.get("reason"),
+            leave_type=leave_type,
+            start_date=start_date,
+            end_date=end_date,
+            reason=reason,
+            status="Pending"
         )
 
         messages.success(
             request,
-            "Leave applied successfully."
+            "Leave request submitted successfully."
         )
 
         return redirect("my_leaves")
@@ -558,3 +603,85 @@ def reject_leave(request, pk):
     )
 
     return redirect("hr_dashboard")
+from datetime import date
+
+
+def calculate_leave_balance(user):
+
+    today = date.today()
+
+    earned_leaves = today.month
+
+    approved_leaves = Leave.objects.filter(
+        user=user,
+        status="Approved",
+        start_date__year=today.year
+    )
+
+    used_leaves = sum(
+        leave.total_days
+        for leave in approved_leaves
+    )
+
+    paid_leaves_used = min(
+        used_leaves,
+        earned_leaves
+    )
+
+    unpaid_leaves = max(
+        used_leaves - earned_leaves,
+        0
+    )
+
+    remaining_leaves = max(
+        earned_leaves - paid_leaves_used,
+        0
+    )
+
+    return {
+        "earned_leaves": earned_leaves,
+        "paid_leaves_used": paid_leaves_used,
+        "remaining_leaves": remaining_leaves,
+        "unpaid_leaves": unpaid_leaves,
+    }
+from datetime import date
+
+
+def calculate_leave_balance(user):
+
+    current_year = date.today().year
+
+    earned_leaves = date.today().month
+
+    approved_leaves = Leave.objects.filter(
+        user=user,
+        status="Approved",
+        start_date__year=current_year
+    )
+
+    used_days = sum(
+        leave.total_days
+        for leave in approved_leaves
+    )
+
+    paid_leaves_used = min(
+        used_days,
+        earned_leaves
+    )
+
+    unpaid_leaves = max(
+        used_days - earned_leaves,
+        0
+    )
+
+    remaining_leaves = max(
+        earned_leaves - paid_leaves_used,
+        0
+    )
+
+    return {
+        "earned_leaves": earned_leaves,
+        "paid_leaves_used": paid_leaves_used,
+        "remaining_leaves": remaining_leaves,
+        "unpaid_leaves": unpaid_leaves,
+    }
